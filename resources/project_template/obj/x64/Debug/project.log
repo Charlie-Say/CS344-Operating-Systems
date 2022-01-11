@@ -1,0 +1,6 @@
+﻿  Copying sources remotely to 'os1.engr.oregonstate.edu'
+  Build command not configured, skipping.
+  Invoking 'make', working directory: '/nfs/stak/users/sayc/vsprojects/AnimalDemo/'
+  make: Nothing to be done for `all'.
+  
+  Copying file '/nfs/stak/users/sayc/vsprojects/AnimalDemo/AnimalDemo' to 'C:\Users\charl\OneDrive\CURRENT TERM\CS 344 Operating Systems\project_template\project_template\bin\x64\Debug\AnimalDemo'
