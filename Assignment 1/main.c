@@ -35,15 +35,72 @@ display_ByYear(struct movie movie[], int count, int year)
 {
     // Loop through all years to find match
     int flag = 0;
-    for(int i = 0; i < count ;i++){
-        if(movie[i].year == year){
+    for(int i = 0; i < count ;i++)
+    {
+        if(movie[i].year == year)
+        {
             printf("%s\n", movie[i].title);
             flag = 1;
         }
     }
-
     // Error output
     if(flag == 0) printf("\nNo data about movies released in year %d\n\n", year);
+    printf("\n");
+}
+
+
+int
+sort_Year(const void* a, const void* b)
+{
+    // Compare function for qsort: year
+    // Help Source: https://stackoverflow.com/questions/6105513/need-help-using-qsort-with-an-array-of-structs
+    struct movie *movieA = (struct movie *)a;
+    struct movie *movieB = (struct movie *)b;
+
+    return ( movieB->year - movieA->year );
+}
+
+
+int
+sort_Ratings(const void* a, const void* b)
+{
+    // Compare function for qsort: ratings
+    // Help Source: https://stackoverflow.com/questions/6105513/need-help-using-qsort-with-an-array-of-structs
+    struct movie *movieA = (struct movie *)a;
+    struct movie *movieB = (struct movie *)b;
+
+    // If year is the same, return higher rated movie, else return year to compare next movie year
+    if(movieB->year == movieA->year)
+    {
+        return (movieB->rating - movieA->rating);
+    }
+    else
+    {
+        return (movieB->year - movieA->year);
+    }
+}
+
+
+void
+display_HighestRating(struct movie movie[], int n)
+{
+    // Sort by year
+    qsort(movie, n + 1, sizeof(movie[0]), sort_Year);
+    // Sort by rating
+    qsort(movie, n + 1, sizeof(movie[0]), sort_Ratings);
+
+    // Print the first year of every year from the sorted arrays
+    int curr_year = 0;
+    for(int i = 0; i < n - 1; i++)
+    {
+        // If current year is not equal to the pointer's year, display the year
+        // If current year is equal, change pointer to the the next year in the list
+        if( curr_year != movie[i].year)
+        {
+            printf("%d %.1f %s\n", movie[i].year, movie[i].rating, movie[i].title);
+        }
+        curr_year = movie[i].year;
+    }
     printf("\n");
 }
 
@@ -60,8 +117,6 @@ display_ByLanguage(struct movie movie[], int count, char lang[])
         char *context = NULL;
         char *token;
         int h = 0;
-        int k;
-        int j;
 
         strcpy(lang_str, movie[i].lang);
 
@@ -77,11 +132,11 @@ display_ByLanguage(struct movie movie[], int count, char lang[])
 
         // Remove '[' and ']' from string
         int len = strlen(lang_str);
-        for(k=0; k < len; k++)
+        for(int k = 0; k < len; k++)
         {
             if(lang_str[k] == '[' || lang_str[k] == ']')
             {
-                for(j=k; j < len; j++)
+                for(int j = k; j < len; j++)
                 {
                     lang_str[j] = lang_str[j+1];
                 }
@@ -94,11 +149,11 @@ display_ByLanguage(struct movie movie[], int count, char lang[])
         // Help Source: https://stackoverflow.com/questions/15961253/c-correct-usage-of-strtok-r
         for(token = strtok_r(lang_str, " ", &context);
         token != NULL;
-        token = strtok_r(NULL, " ", &context))
+        token = strtok_r(NULL, " ", &context))      // Create tokens for the string of languages
         {
-            if(strcmp(token, lang) == 0)
+            if(strcmp(token, lang) == 0)        // Compare token value with user input
             {
-                printf("%d %s\n",movie[i].year, movie[i].title);
+                printf("%d %s\n", movie[i].year, movie[i].title);
                 flag = 1;
             }
         }
@@ -107,62 +162,9 @@ display_ByLanguage(struct movie movie[], int count, char lang[])
 
 
 int
-sort_Year(const void* a, const void* b)
-{
-    // Compare function for qsort: year
-    //Help Source: https://stackoverflow.com/questions/6105513/need-help-using-qsort-with-an-array-of-structs
-    struct movie *movieA = (struct movie *)a;
-    struct movie *movieB = (struct movie *)b;
-
-    return ( movieB->year - movieA->year );
-}
-
-
-int
-sort_Ratings(const void* a, const void* b)
-{
-    // Compare function for qsort: ratings
-    //Help Source: https://stackoverflow.com/questions/6105513/need-help-using-qsort-with-an-array-of-structs
-    struct movie *movieA = (struct movie *)a;
-    struct movie *movieB = (struct movie *)b;
-
-    if(movieB->year == movieA->year)
-    {
-        return (movieB->rating - movieA->rating);
-    }
-    else
-    {
-        return (movieB->year - movieA->year);
-    }
-
-}
-
-
-void
-display_HighestRating(struct movie movie[], int n)
-{
-    // Sort by year
-    qsort(movie, n + 1, sizeof(movie[0]), sort_Year);
-    // Sort by rating
-    qsort(movie, n + 1, sizeof(movie[0]), sort_Ratings);
-
-    // Print the first year of every year from the sorted arrays
-    int curr_year = -1;
-    for(int i = 0; i < n - 1; i++)
-    {
-        if(movie[i].year != curr_year)
-        {
-            printf("%d %.1f %s\n", movie[i].year, movie[i].rating, movie[i].title);
-        }
-        curr_year = movie[i].year;
-    }
-    printf("\n");
-}
-
-
-int
 main(int argc, char** argv)
 {
+    // Check for file errors
     if(argc == 1)
     {
         printf("No File Found.\n");
@@ -187,29 +189,44 @@ main(int argc, char** argv)
             return 0;
         }
 
-        //Get line by line in file
+        // Get line by line in file
         while (fgets(line, sizeof(line), file))
         {
             if(count >= 1)
             {
+                // Split lines into tokens
                 char* tok = strtok(line, ",\n");
-                int k = 1;
+                int i = 0;
+                // String copy the values of each token
                 while(tok != NULL)
                 {
-                    if(k == 1)  strcpy(movie[count - 1].title,tok);
-                    if(k == 2)  movie[count - 1].year = atoi(tok);
-                    if(k == 3)  strcpy(movie[count - 1].lang, tok);
-                    if(k == 4)  movie[count - 1].rating = atof(tok);
+                    if(i == 0)
+                    {
+                        strcpy(movie[count].title,tok);
+                    }
+                    if(i == 1)
+                    {
+                        movie[count].year = atoi(tok);      // Convert string to integer
+                    }
+                    if(i == 2)
+                    {
+                        strcpy(movie[count].lang, tok);
+                    }
+                    if(i == 3)
+                    {
+                        movie[count].rating = atof(tok);    // Convert string to float
+                    }
                     tok = strtok(NULL, ",\n");
-                    k++;
+                    i++;
                 }
             }
-            count++;
+            count++;    // Count the number of lines
         }
 
-        printf("\n\nProcessed file %s and parsed data for %d movies\n\n", input_file, count - 1);   //Remove collumn names
+        printf("\n\nProcessed file %s and parsed data for %d movies\n\n", input_file, count - 1);   // Minus 1 for the names of collumns
 
-        while(true){
+        while(true)
+        {
             printf("1. Show movies released in the specified year\n");
             printf("2. Show highest rated movie for each year\n");
             printf("3. Show the title and year of release of all movies in a specific language\n");
@@ -217,7 +234,9 @@ main(int argc, char** argv)
             printf("Enter a choice from 1 to 4: ");
             scanf("%d", &option);
 
-            switch(option){
+            // Help Source: https://www.tutorialspoint.com/cprogramming/switch_statement_in_c.htm
+            switch(option)
+            {
 
                 case 1:
                     printf("\n");
