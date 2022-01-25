@@ -65,10 +65,11 @@ int checkIfFileExists(const char* filename){
     }
 }
 
+
 void createDir(char input_file[1024])
 {
-    FILE *file = fopen(input_file, "r");
-    FILE *fp;
+    FILE* file = fopen(input_file, "r");
+    FILE* fp;
 
     struct movie movie[1000];
     char line[1000];
@@ -98,7 +99,7 @@ void createDir(char input_file[1024])
 
     if(file == NULL){
         printf("\n");
-        printf("File not found: %s", input_file);
+        printf("ERROR FILE NOT FOUND: %s", input_file);
         printf("\n");
     }
 
@@ -143,9 +144,7 @@ void createDir(char input_file[1024])
     {
         sprintf(str, "./%s/%d", dirname, movie[i].year);
         strcat(str, subfix);
-        printf("%s\n", str);
         char *txtfile = str;
-        printf("%s\n", txtfile);
 
         if(checkIfFileExists(txtfile))
         {
@@ -159,6 +158,7 @@ void createDir(char input_file[1024])
             fp = fopen(txtfile, "w+");
             fputs(movie[i].title, fp); 
             fputs("\n", fp);
+            printf("File Created: %s\n", txtfile);
 
             fclose(fp);
         }
@@ -176,29 +176,36 @@ char* largestFile()
     struct stat st;
     char entryName[256];
     int container = 0;
-    char *fileName;
-    char str[256];
-    char subfix[256] = ".csv";
+    char* fileName;
+
+    char* str;
+    int len;
+    char* last_four;
+    char* substr = ".csv";
 
     // Go through all the entries
     while((aDir = readdir(currDir)) != NULL)
     {
-        // sprintf(str, "./%s/%d", aDir->d_name, subfix);
-        // strcat(str, subfix);
-        
+        str = aDir->d_name;
+        len = strlen(str);
+        last_four = &str[len-4];
+
         if(strncmp(PREFIX, aDir->d_name, strlen(PREFIX)) == 0)
         {
-            // Get meta-data for the current entry
-            stat(aDir->d_name, &dirStat);
-            memset(entryName, '\0', sizeof(entryName));
-            strcpy(entryName, aDir->d_name);
-
-            if (stat(entryName, &st) == 0)
+            // --------------------------------------
+            if (!strcmp(last_four, substr))
             {
-                if(st.st_size > container)
+                stat(aDir->d_name, &dirStat);
+                memset(entryName, '\0', sizeof(entryName));
+                strcpy(entryName, aDir->d_name);
+
+                if (stat(entryName, &st) == 0)
                 {
-                    container = st.st_size;
-                    fileName = aDir->d_name;
+                    if(st.st_size > container)
+                    {
+                        container = st.st_size;
+                        fileName = aDir->d_name;
+                    }
                 }
             }
         }
@@ -221,22 +228,34 @@ char* smallestFile()
     int container = 5000;
     char *fileName;
 
+    char* str;
+    int len;
+    char *last_four;
+    char* substr = ".csv";
+
     // Go through all the entries
     while((aDir = readdir(currDir)) != NULL)
     {
+        str = aDir->d_name;
+        len = strlen(str);
+        last_four = &str[len-4];
+
         if(strncmp(PREFIX, aDir->d_name, strlen(PREFIX)) == 0)
         {
-            // Get meta-data for the current entry
-            stat(aDir->d_name, &dirStat);
-            memset(entryName, '\0', sizeof(entryName));
-            strcpy(entryName, aDir->d_name);
-
-            if (stat(entryName, &st) == 0)
+            // --------------------------------------
+            if (!strcmp(last_four, substr))
             {
-                if(st.st_size < container)
+                stat(aDir->d_name, &dirStat);
+                memset(entryName, '\0', sizeof(entryName));
+                strcpy(entryName, aDir->d_name);
+
+                if (stat(entryName, &st) == 0)
                 {
-                    container = st.st_size;
-                    fileName = aDir->d_name;
+                    if(st.st_size < container)
+                    {
+                        container = st.st_size;
+                        fileName = aDir->d_name;
+                    }
                 }
             }
         }
@@ -247,12 +266,13 @@ char* smallestFile()
     return fileName;
 }
 
+
 void caseOne()
 {
     int option;
     char completefn[1024];
     char* filePtr;
-    char test[1024];
+    char fn[1024];
 
     while (true)
     {
@@ -263,50 +283,61 @@ void caseOne()
         printf("Enter 3 to specify the name of a file\n\n");
         printf("Enter a choice from 1 to 3: ");
         scanf("%d", &option);
-        printf("\n");
 
-        switch (option)
+        if(option == 1 || option == 2 || option == 3)
         {
-        case 1:
-            // Largest File
-            filePtr = largestFile();
-            strcpy(test, filePtr);
-            printf("\n\nNow processing the chosen file named %s\n\n", test);
-            createDir(test);
-            continue;
-
-        case 2:
-            // Smallest File
-            filePtr = smallestFile();
-            strcpy(test, filePtr);
-            printf("\n\nNow processing the chosen file named %s\n\n", test);
-            createDir(test);
-            continue;
-
-        case 3:
-            // Custom File
-            printf("Enter the complete file name: ");
-            scanf("%s", &completefn);
-
-            // Open file
-            FILE *file = fopen(completefn, "r");
-            // Error if file not found
-            if (file == NULL)
+            switch (option)
             {
-                printf("\n");
-                printf("File not found: %s", completefn);
-                printf("\n");
-            }
-            else
-            {
-                printf("\n\nNow processing the chosen file named %s\n\n", completefn);
-                createDir(completefn);
-                continue;
+            case 1:
+                // Largest File
+                filePtr = largestFile();
+                strcpy(fn, filePtr);
+                printf("\n\nNow processing the chosen file named %s\n", fn);
+                createDir(fn);
+                return;
+
+            case 2:
+                // Smallest File
+                filePtr = smallestFile();
+                strcpy(fn, filePtr);
+                printf("\n\nNow processing the chosen file named %s\n", fn);
+                createDir(fn);
+                return;
+
+
+            case 3:
+                // Custom File
+                printf("Enter the complete file name: ");
+                scanf("%s", &completefn);
+
+                // Open file
+                FILE *file = fopen(completefn, "r");
+                // Error if file not found
+                if (file == NULL)
+                {
+                    printf("\n");
+                    printf("ERROR FILE NOT FOUND: %s", completefn);
+                    printf("\n");
+                    continue;
+
+                }
+                else
+                {
+                    printf("\n\nNow processing the chosen file named %s\n", completefn);
+                    createDir(completefn);
+                    return;
+
+                }
             }
         }
-        continue;
+        else
+        {
+            printf("Not a valid option. Please try again.\n\n");
+            continue;
+        }
     }
 }
+
 
 int main()
 {
@@ -321,14 +352,19 @@ int main()
         printf("Enter a choice 1 or 2: ");
         scanf("%d", &option);
 
-        // Help Source: https://www.tutorialspoint.com/cprogramming/switch_statement_in_c.htm
-        switch (option)
+        if(option == 1)
         {
-        case 1:
             caseOne();
-
-        case 2:
+        }
+        if(option == 2)
+        {
+            printf("Exiting the program.");
             exit(0);
+        }
+        else
+        {
+            printf("Not a valid option. Please try again.\n\n");
+            continue;
         }
     }
     return 0;

@@ -9,7 +9,7 @@ OSU ID: 934377368
     - Locate directory of code files
 
     - Unzip files with command in terminal:
-	$ "unzip file_name_here" (without quotes)
+	$ "unzip file_name_here" 	(without quotes)
 	example: $ unzip sayc_program2.zip
 
     - At the command line type in:
