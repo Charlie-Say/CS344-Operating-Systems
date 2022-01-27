@@ -20,8 +20,6 @@ OSU ID: 934377368
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-
-// #include <conio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -32,7 +30,7 @@ OSU ID: 934377368
 
 #define PREFIX "movies_"
 
-
+// Create struct for movie file data
 struct movie
 {
     char title[1000];
@@ -41,6 +39,8 @@ struct movie
     float rating;
 };
 
+
+// Sorrt for processing file
 int sort_Year(const void *a, const void *b)
 {
     // Compare function for qsort: year
@@ -52,6 +52,7 @@ int sort_Year(const void *a, const void *b)
 }
 
 
+// Check directory if file exists
 int checkIfFileExists(const char* filename){
     struct stat buffer;
     int exist = stat(filename, &buffer);
@@ -66,6 +67,7 @@ int checkIfFileExists(const char* filename){
 }
 
 
+// Create directory and files with movie by year
 void createDir(char input_file[1024])
 {
     FILE* file = fopen(input_file, "r");
@@ -81,22 +83,23 @@ void createDir(char input_file[1024])
     char perm[] = "chmod 750 ";
     char prefix[] = "sayc.movies.";
     uint64_t num;
-    srand(time(0));
+    srand(time(0));         // Randomize numbers every time the application runs
     num = rand();
     num = (num << 32) | rand();
     num = num % 99999;
 
-    sprintf(str, "%d", num);
+    sprintf(str, "%d", num);        // Convert random num to string
 
-    strcat(prefix, str);
+    strcat(prefix, str);        // Concat random-num-string to string prefix "sayc.movies."
     char *dirname = prefix;
-    mkdir(dirname, 0750);
+    mkdir(dirname, 0750);       // Make directory
 
     // strcat(perm, prefix);
     // system(perm);
 
     printf("\nCreated directory with name %s\n\n", dirname);
 
+    // ERROR for file
     if(file == NULL){
         printf("\n");
         printf("ERROR FILE NOT FOUND: %s", input_file);
@@ -137,17 +140,20 @@ void createDir(char input_file[1024])
         count++;    // Count the number of lines
     }
 
-    qsort(movie, count, sizeof(movie[0]), sort_Year);
+    qsort(movie, count, sizeof(movie[0]), sort_Year);       // Qsort movies by year
 
     char subfix[] = ".txt";
     for(i = 0; i < count - 1; i++)
     {
+        // Create string for the file name
         sprintf(str, "./%s/%d", dirname, movie[i].year);
         strcat(str, subfix);
         char *txtfile = str;
 
+        // Check if file already exists in directory
         if(checkIfFileExists(txtfile))
         {
+            // If file exists, append data to file
             fp = fopen(txtfile, "a");
             fputs(movie[i].title, fp);
             fputs("\n", fp);
@@ -155,52 +161,58 @@ void createDir(char input_file[1024])
         }
         else
         {
+            // If file does not exist, create new file
             fp = fopen(txtfile, "w+");
             fputs(movie[i].title, fp); 
             fputs("\n", fp);
             printf("File Created: %s\n", txtfile);
-
             fclose(fp);
+            chmod(txtfile, S_IRUSR|S_IWUSR|S_IRGRP);
         }
     }
     printf("\n");
     fclose(file);
 }
 
+
+// Find largest file
 char* largestFile()
 {
     // Open the current directory
     DIR* currDir = opendir(".");
     struct dirent *aDir;
-    struct stat dirStat;
-    struct stat st;
+    struct stat dirStat;        // Struct for directory data
+    struct stat st;             // Struct for file data
     char entryName[256];
     int container = 0;
     char* fileName;
-
     char* str;
     int len;
-    char* last_four;
+    char* last_four;        // Pointer to the last 4 characters of file string
     char* substr = ".csv";
 
     // Go through all the entries
     while((aDir = readdir(currDir)) != NULL)
     {
+        // Create pointer for last four characters of file string
         str = aDir->d_name;
         len = strlen(str);
         last_four = &str[len-4];
 
+        // String compare the PREFIX "movies_" with characters of file name with length of PREFIX
         if(strncmp(PREFIX, aDir->d_name, strlen(PREFIX)) == 0)
         {
-            // --------------------------------------
+            // String compare last four characters of file with substring ".csv"
             if (!strcmp(last_four, substr))
             {
+                // Copy pointer of file name to match with data in struct
                 stat(aDir->d_name, &dirStat);
                 memset(entryName, '\0', sizeof(entryName));
                 strcpy(entryName, aDir->d_name);
 
                 if (stat(entryName, &st) == 0)
                 {
+                    // Check if file is larger than previous file
                     if(st.st_size > container)
                     {
                         container = st.st_size;
@@ -217,6 +229,7 @@ char* largestFile()
 }
 
 
+// Find smallest file
 char* smallestFile()
 {
     // Open the current directory
@@ -227,7 +240,6 @@ char* smallestFile()
     char entryName[256];
     int container = 5000;
     char *fileName;
-
     char* str;
     int len;
     char *last_four;
@@ -236,13 +248,15 @@ char* smallestFile()
     // Go through all the entries
     while((aDir = readdir(currDir)) != NULL)
     {
+        // Create pointer for last four characters of file string
         str = aDir->d_name;
         len = strlen(str);
         last_four = &str[len-4];
 
+        // String compare the PREFIX "movies_" with characters of file name with length of PREFIX
         if(strncmp(PREFIX, aDir->d_name, strlen(PREFIX)) == 0)
         {
-            // --------------------------------------
+            // String compare last four characters of file with substring ".csv"
             if (!strcmp(last_four, substr))
             {
                 stat(aDir->d_name, &dirStat);
@@ -251,6 +265,7 @@ char* smallestFile()
 
                 if (stat(entryName, &st) == 0)
                 {
+                    // Check if file is larger than previous file
                     if(st.st_size < container)
                     {
                         container = st.st_size;
@@ -267,6 +282,7 @@ char* smallestFile()
 }
 
 
+// User selects option 1 from main menu
 void caseOne()
 {
     int option;
@@ -276,6 +292,7 @@ void caseOne()
 
     while (true)
     {
+        // Give options to user
         printf("\n");
         printf("Which file you want to process?\n\n");
         printf("Enter 1 to pick the largest file\n");
@@ -284,56 +301,52 @@ void caseOne()
         printf("Enter a choice from 1 to 3: ");
         scanf("%d", &option);
 
-        if(option == 1 || option == 2 || option == 3)
+        if(option == 1)
         {
-            switch (option)
+            // Largest File
+            filePtr = largestFile();
+            strcpy(fn, filePtr);
+            printf("\n\nNow processing the chosen file named %s\n", fn);
+            createDir(fn);
+            return;
+        }
+        if(option == 2)
+        {
+            // Smallest File
+            filePtr = smallestFile();
+            strcpy(fn, filePtr);
+            printf("\n\nNow processing the chosen file named %s\n", fn);
+            createDir(fn);
+            return;
+        }
+        if(option == 3)
+        {
+            // Custom File
+            printf("Enter the complete file name: ");
+            scanf("%s", &completefn);
+
+            // Open file
+            FILE *file = fopen(completefn, "r");
+            // Error if file not found
+            if (file == NULL)
             {
-            case 1:
-                // Largest File
-                filePtr = largestFile();
-                strcpy(fn, filePtr);
-                printf("\n\nNow processing the chosen file named %s\n", fn);
-                createDir(fn);
+                // ERROR handler for valid file
+                printf("\n");
+                printf("ERROR FILE NOT FOUND: %s", completefn);
+                printf("\n");
+                continue;
+            }
+            else
+            {
+                printf("\n\nNow processing the chosen file named %s\n", completefn);
+                createDir(completefn);
                 return;
-
-            case 2:
-                // Smallest File
-                filePtr = smallestFile();
-                strcpy(fn, filePtr);
-                printf("\n\nNow processing the chosen file named %s\n", fn);
-                createDir(fn);
-                return;
-
-
-            case 3:
-                // Custom File
-                printf("Enter the complete file name: ");
-                scanf("%s", &completefn);
-
-                // Open file
-                FILE *file = fopen(completefn, "r");
-                // Error if file not found
-                if (file == NULL)
-                {
-                    printf("\n");
-                    printf("ERROR FILE NOT FOUND: %s", completefn);
-                    printf("\n");
-                    continue;
-
-                }
-                else
-                {
-                    printf("\n\nNow processing the chosen file named %s\n", completefn);
-                    createDir(completefn);
-                    return;
-
-                }
             }
         }
-        else
+        if(option != 1 || option != 2 || option != 3)
         {
+            // ERROR message for valid user option
             printf("Not a valid option. Please try again.\n\n");
-            continue;
         }
     }
 }
@@ -347,6 +360,7 @@ int main()
 
     while (true)
     {
+        // Options for user
         printf("1. Select file to process\n");
         printf("2. Exit from the program\n\n");
         printf("Enter a choice 1 or 2: ");
@@ -356,16 +370,16 @@ int main()
         {
             caseOne();
         }
+        else
+        {
+            printf("Not a valid option. Please try again.\n\n");
+        }
         if(option == 2)
         {
             printf("Exiting the program.");
             exit(0);
         }
-        else
-        {
-            printf("Not a valid option. Please try again.\n\n");
-            continue;
-        }
+
     }
     return 0;
 }
