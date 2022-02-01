@@ -358,7 +358,7 @@ void userInput()
             break;
 		}
         else if(strcmp(cmd_arr[0], "cd") == 0)
-		{
+        {
             /*
             ****************************************************************************************
                 The [cd] command changes the working directory of smallsh.
@@ -381,9 +381,8 @@ void userInput()
             {
                 strcpy(directory, cmd_arr[1]);      // Copy string of [cd] argument (path)
                 chdir(directory);       // Change directory to argument after [cd] command
-			}
-		}
-
+            }
+        }
         else
         {
             /*
@@ -401,9 +400,9 @@ void userInput()
             if (child_fork == 0)    // If child process is Zero: process created
             {
                 executeCMD(the_word, cmd_arr);      // Call function to execute other commands
-			}
-			else
-			{
+            }
+            else
+            {
                 /*
                 *****************************************************************************************
                     Checks to see if background was toggled by '&' and compares with the global background variable
@@ -420,8 +419,8 @@ void userInput()
                     fflush(stdout);
                     pid_count++;        // Increment pid counter
                 }
-				else
-				{
+                else
+                {
                     /*
                     *****************************************************************************************
                         System call suspends execution of the current
@@ -434,16 +433,16 @@ void userInput()
                     *****************************************************************************************
                     */
 
-					waitpid(child_fork, &child_status, 0);             // pid_t waitpid(pid_t pid, int *status, int options);
+                    waitpid(child_fork, &child_status, 0);             // pid_t waitpid(pid_t pid, int *status, int options);
 
-					if (WIFEXITED(child_status))       // Checks to see if child process has terminated (and calling waitpid() failed)
-					{
+                    if (WIFEXITED(child_status))       // Checks to see if child process has terminated (and calling waitpid() failed)
+                    {
                         // Exit status failed: child_status has value of 0
-						child_signal = 0;
-						prev_exit = WEXITSTATUS(child_status);      // WEXITSTATUS is macro evaluates the status argument that child process passed exit()
-					}
-					else
-					{
+                        child_signal = 0;
+                        prev_exit = WEXITSTATUS(child_status);      // WEXITSTATUS is macro evaluates the status argument that child process passed exit()
+                    }
+                    else
+                    {
                         /*
                         *****************************************************************************************
                             WIFSIGNALED macro indicates that the child process exited because it raised a signal,
@@ -454,36 +453,36 @@ void userInput()
                         *****************************************************************************************
                         */
 
-						child_signal = WTERMSIG(child_status);
-						printf("terminated by signal %d\n", child_signal);
-				        fflush(stdout);
-					}
-				}
-			}
+                        child_signal = WTERMSIG(child_status);
+                        printf("terminated by signal %d\n", child_signal);
+                        fflush(stdout);
+                    }
+                }
+            }
 
             // Check the status of all processes BEFORE returning access to command line to user
-			while((child_fork = waitpid(-1, &child_status, WNOHANG)) > 0)
-			{
+            while((child_fork = waitpid(-1, &child_status, WNOHANG)) > 0)
+            {
                 if(pid_count == 0)
                 {
                     continue;
                 }
-				else if(WIFEXITED(child_status))        // Checks to see if child process has terminated (and calling waitpid() failed)
-				{
-					child_signal = 0;
-					prev_exit = WEXITSTATUS(child_status);      // WEXITSTATUS is macro evaluates the status argument that child process passed exit()
-					printf("Background pid %d is done: exit value %d\n", child_fork, prev_exit);
-				    fflush(stdout);
-				}
-				else
-				{
-					child_signal = WTERMSIG(child_status);
-					printf("Background pid %d is done: terminated by signal %d\n", child_fork, child_signal);
-				    fflush(stdout);
-				}
-				pid_count--;        // Exit loop when pid_count == 0
-			}
-		}
+                else if(WIFEXITED(child_status))        // Checks to see if child process has terminated (and calling waitpid() failed)
+                {
+                    child_signal = 0;
+                    prev_exit = WEXITSTATUS(child_status);      // WEXITSTATUS is macro evaluates the status argument that child process passed exit()
+                    printf("Background pid %d is done: exit value %d\n", child_fork, prev_exit);
+                    fflush(stdout);
+                }
+                else
+                {
+                    child_signal = WTERMSIG(child_status);
+                    printf("Background pid %d is done: terminated by signal %d\n", child_fork, child_signal);
+                    fflush(stdout);
+                }
+                pid_count--;        // Exit loop when pid_count == 0
+            }
+        }
 	background = 0;         // Turn background off
 	}
 }
@@ -492,5 +491,5 @@ void userInput()
 int main()
 {
     userInput();
-	return 0;
+    return 0;
 }
