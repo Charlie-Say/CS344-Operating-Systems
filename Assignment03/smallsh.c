@@ -1,4 +1,6 @@
-/*
+
+/*****************************************************************************************
+
 Assignment 3: smallsh (Portfolio Assignment)
 By: Charlie Say
 sayc@oregonstate.edu
@@ -14,7 +16,9 @@ Requirements:
     - Support input and output redirection
     - Support running commands in foreground and background processes
     - Implement custom handlers for 2 signals, SIGINT and SIGTSTP
-*/
+
+*****************************************************************************************/
+
 
 
 #include <stdio.h>
@@ -83,9 +87,11 @@ void wordArray()
 
 
 /*
+*****************************************************************************************
     An input file redirected via stdin should be opened for reading only;
     if your shell cannot open the file for reading,
     it should print an error message and set the exit status to 1 (but don't exit the shell).
+*****************************************************************************************
 */
 void inputFile(char theFile[MAX_CMD])
 {
@@ -112,9 +118,11 @@ void inputFile(char theFile[MAX_CMD])
 
 
 /*
+*****************************************************************************************
     Similarly, an output file redirected via stdout should be opened for writing only;
     it should be truncated if it already exists or created if it does not exist.
     If your shell cannot open the output file it should print an error message and set the exit status to 1 (but don't exit the shell).
+*****************************************************************************************
 */
 void outputFile(char theFile[MAX_CMD])
 {
@@ -188,8 +196,12 @@ int* executeCMD(int the_word, char cmd_arr[MAX_ARGS][256])
 
 void signalStop()
 {
-    // Help Source: https://stackoverflow.com/questions/12902627/the-difference-between-stdout-and-stdout-fileno
-    // Help Source: https://www.geeksforgeeks.org/input-output-system-calls-c-create-open-close-read-write/
+    /*
+    *****************************************************************************************
+        Help Source: https://stackoverflow.com/questions/12902627/the-difference-between-stdout-and-stdout-fileno
+        Help Source: https://www.geeksforgeeks.org/input-output-system-calls-c-create-open-close-read-write/
+    *****************************************************************************************
+    */
 
     char* enter = "\nEntering foreground-only mode (& is now ignored)\n";
 	char* exit = "\nExiting foreground-only mode\n";
@@ -228,8 +240,10 @@ void signalHandler()
     sigaction(SIGTSTP, &signal2, NULL);
 
     /*
+    *****************************************************************************************
         - A child, if any, running as a foreground process must ignore SIGTSTP.
         - Any children running as background process must ignore SIGTSTP.
+    *****************************************************************************************
     */
     signal1.sa_handler = SIG_DFL;       // Set SIGINT as default to ignore SIGTSTP
     sigaction(SIGINT, &signal1, NULL);
@@ -249,11 +263,11 @@ void userInput()
     char pid[10];
 	sprintf(pid, "%d", getpid());   // Convert pid to string for $$ expansion
 
-    pid_t child_fork;   // Data type for process identification used to represent process ids
+    pid_t child_fork;       // Data type for process identification used to represent process ids
     int child_signal = 1;
 
-    int pid_count = 0;
-    int child_status;
+    int pid_count = 0;      // Keep track of pids for checking status of processes
+    int child_status;       // Status of child process
 
 
 
@@ -309,8 +323,10 @@ void userInput()
         else if(strcmp(cmd_arr[0], "status") == 0)
         {
             /*
+            *****************************************************************************************
                 The [status] command prints out either the exit status or the
                 terminating signal of the last foreground process ran by your shell.
+            *****************************************************************************************
             */
             if(child_signal == 0)         // If command is run before any foreground command, return exit status 0
             {
@@ -327,9 +343,11 @@ void userInput()
         else if(strcmp(cmd_arr[0], "exit") == 0)     // Compare first string in array with 'exit'
 		{
             /*
+            *****************************************************************************************
                 The [exit] command exits your shell.
                 It takes no arguments. When this command is run, your shell must kill
                 any other processes or jobs that your shell has started before it terminates itself.
+            *****************************************************************************************
             */
 
             break;
@@ -337,14 +355,16 @@ void userInput()
         else if(strcmp(cmd_arr[0], "cd") == 0)
 		{
             /*
+            ****************************************************************************************
                 The [cd] command changes the working directory of smallsh.
 
                 - By itself - with no arguments - it changes to the directory specified in the HOME environment variable
                     - This is typically not the location where smallsh was executed from,
-                      unless your shell executable is located in the HOME directory,
-                      in which case these are the same.
+                        unless your shell executable is located in the HOME directory,
+                        in which case these are the same.
                 - This command can also take one argument: the path of a directory to change to.
-                  Your [cd] command should support both absolute and relative paths.
+                    Your [cd] command should support both absolute and relative paths.
+            ****************************************************************************************
             */
 
 			if(the_word == 1)     // Array contains 1 word
@@ -362,10 +382,12 @@ void userInput()
         else
         {
             /*
+            ****************************************************************************************
                 Executing Other Commands
 
                 Your shell will execute any commands other than the 3 built-in
                 command by using fork(), exec() and waitpid()
+            ****************************************************************************************
             */
 
             signalHandler();        // Initialize with signal handlers
@@ -378,9 +400,11 @@ void userInput()
 			else
 			{
                 /*
+                *****************************************************************************************
                     Checks to see if background was toggled by '&' and compares with the global background variable
 
                     Help Source: https://www.tutorialspoint.com/unix_system_calls/waitpid.htm
+                *****************************************************************************************
                 */
 				if(background && globalBG)
 				{
@@ -393,12 +417,14 @@ void userInput()
 				else
 				{
                     /*
+                    *****************************************************************************************
                         System call suspends execution of the current
                         process until one of its children terminates
 
                         Help Source: https://stackoverflow.com/questions/47441871/why-should-we-check-wifexited-after-wait-in-order-to-kill-child-processes-in-lin
 
                         Help Source: https://www.geeksforgeeks.org/exit-status-child-process-linux/
+                    *****************************************************************************************
                     */
 
 					waitpid(child_fork, &child_status, 0);             // pid_t waitpid(pid_t pid, int *status, int options);
@@ -412,10 +438,12 @@ void userInput()
 					else
 					{
                         /*
+                        *****************************************************************************************
                             WIFSIGNALED macro indicates that the child process exited because it raised a signal,
                             the WTERMSIG macro returns the numeric value of the signal that was raised by the child process
 
                             Help Source: https://www.ibm.com/docs/en/ztpf/2019?topic=zca-wtermsig-determine-which-signal-caused-child-process-exit
+                        *****************************************************************************************
                         */
 
 						child_signal = WTERMSIG(child_status);
