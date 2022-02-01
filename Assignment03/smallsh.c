@@ -20,7 +20,6 @@ Requirements:
 *****************************************************************************************/
 
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,13 +42,13 @@ void wordArray()
     char pid[10];             // pid string
     int i;                    // Loop variable for character in user input
     int j;                    // Loop variable for character in pid
-    int the_word;           // Keep track of word when finding special characters
+    int the_word;             // Keep track of word when finding special characters
     int the_char;             // Keep track of the character in word when finding special characters
 
     printf(": ");
     fflush(stdin);
     fgets(user_input, MAX_CMD, stdin);     // Get line of user input
-	sprintf(pid, "%d", getpid());       // Convert pid to string for $$ expansion
+    sprintf(pid, "%d", getpid());       // Convert pid to string for $$ expansion
 
     for(i = 0; i <= (strlen(user_input)); i++)
     {
