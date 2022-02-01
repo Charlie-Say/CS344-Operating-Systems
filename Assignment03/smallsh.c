@@ -48,7 +48,7 @@ void wordArray()
     printf(": ");
     fflush(stdin);
     fgets(user_input, MAX_CMD, stdin);     // Get line of user input
-    sprintf(pid, "%d", getpid());       // Convert pid to string for $$ expansion
+    sprintf(pid, "%d", getpid());          // Convert pid to string for $$ expansion
 
     for(i = 0; i <= (strlen(user_input)); i++)
     {
@@ -68,7 +68,7 @@ void wordArray()
         {
             cmd_arr[the_word][the_char] = '\0';       // End of word is NULL character
             the_char = 0;      // Reset character to 0 for next word
-            the_word++;     // Increment word in array
+            the_word++;        // Increment word in array
         }
 
         // The '&' character will toggle background only if it is the last character
@@ -85,17 +85,18 @@ void wordArray()
 }
 
 
-/*
-*****************************************************************************************
-    An input file redirected via stdin should be opened for reading only;
-    if your shell cannot open the file for reading,
-    it should print an error message and set the exit status to 1 (but don't exit the shell).
-
-    Help Source: https://www.quora.com/What-is-the-difference-between-open-and-fopen-in-C-How-are-they-different-with-each-other-in-terms-of-internal-working
-*****************************************************************************************
-*/
 void inputFile(char theFile[MAX_CMD])
 {
+    /*
+    *****************************************************************************************
+        An input file redirected via stdin should be opened for reading only;
+        if your shell cannot open the file for reading,
+        it should print an error message and set the exit status to 1 (but don't exit the shell).
+
+        Help Source: https://www.quora.com/What-is-the-difference-between-open-and-fopen-in-C-How-are-they-different-with-each-other-in-terms-of-internal-working
+    *****************************************************************************************
+    */
+
     int fd;             // File Descriptor: integer value of file in process
     int dup_error;
     fd = open(theFile, O_RDONLY);       // Use open() for returning a file descriptor. fopen() returns FILE*
@@ -118,17 +119,18 @@ void inputFile(char theFile[MAX_CMD])
 }
 
 
-/*
-*****************************************************************************************
-    Similarly, an output file redirected via stdout should be opened for writing only;
-    it should be truncated if it already exists or created if it does not exist.
-    If your shell cannot open the output file it should print an error message and set the exit status to 1 (but don't exit the shell).
-
-    Help Source: https://www.quora.com/What-is-the-difference-between-open-and-fopen-in-C-How-are-they-different-with-each-other-in-terms-of-internal-working
-*****************************************************************************************
-*/
 void outputFile(char theFile[MAX_CMD])
 {
+    /*
+    *****************************************************************************************
+        Similarly, an output file redirected via stdout should be opened for writing only;
+        it should be truncated if it already exists or created if it does not exist.
+        If your shell cannot open the output file it should print an error message and set the exit status to 1 (but don't exit the shell).
+
+        Help Source: https://www.quora.com/What-is-the-difference-between-open-and-fopen-in-C-How-are-they-different-with-each-other-in-terms-of-internal-working
+    *****************************************************************************************
+    */
+
     int fd;             // File Descriptor: integer value of file in process
     int dup_error;
     fd = open(theFile, O_WRONLY | O_CREAT | O_TRUNC, 0644);         // Use open() for returning a file descriptor. fopen() returns FILE*
@@ -207,28 +209,35 @@ void signalStop()
     */
 
     char* enter = "\nEntering foreground-only mode (& is now ignored)\n";
-	char* exit = "\nExiting foreground-only mode\n";
+    char* exit = "\nExiting foreground-only mode\n";
 
     // Enter foreground
-	if(globalBG == 1)
-	{
-		write(1, enter, 51);
-		fflush(stdin);
-		globalBG = 0;       // Turn background off
-	}
-	else
-	{
+    if(globalBG == 1)
+    {
+        write(1, enter, 51);
+        fflush(stdin);
+        globalBG = 0;       // Turn background off
+    }
+    else
+    {
         // Exit foreground
-		write(1, exit, 31);
-		fflush(stdin);
-		globalBG = 1;       // Turn background on
-	}
+        write(1, exit, 31);
+        fflush(stdin);
+        globalBG = 1;       // Turn background on
+    }
 }
 
 
 void signalHandler()
 {
-    // Help Source: https://stackoverflow.com/questions/31882797/how-to-use-sigrtmax-and-sigrtmin
+    /*
+    *****************************************************************************************
+        - A child, if any, running as a foreground process must ignore SIGTSTP.
+        - Any children running as background process must ignore SIGTSTP.
+
+        Help Source: https://stackoverflow.com/questions/31882797/how-to-use-sigrtmax-and-sigrtmin
+    *****************************************************************************************
+    */
 
     // SIGNINT signal to parents and all childern at the same time
     struct sigaction signal1;
@@ -241,13 +250,6 @@ void signalHandler()
     signal2.sa_handler = signalStop;
     sigfillset(&signal2.sa_mask);
     sigaction(SIGTSTP, &signal2, NULL);
-
-    /*
-    *****************************************************************************************
-        - A child, if any, running as a foreground process must ignore SIGTSTP.
-        - Any children running as background process must ignore SIGTSTP.
-    *****************************************************************************************
-    */
 
     signal1.sa_handler = SIG_DFL;       // Set SIGINT as default to ignore SIGTSTP
     sigaction(SIGINT, &signal1, NULL);
@@ -264,7 +266,7 @@ void userInput()
     int i;           // Loop iterator for word in array
     int j;           // Loop iterator for characters in word
     char pid[10];
-	sprintf(pid, "%d", getpid());   // Convert pid to string for $$ expansion
+    sprintf(pid, "%d", getpid());   // Convert pid to string for $$ expansion
 
     pid_t child_fork;       // Data type for process identification used to represent process ids
     int child_signal = 1;
@@ -287,35 +289,35 @@ void userInput()
         // Create array of words
         for(i = 0; i <= (strlen(user_input)); i++)
 		{
-			if(user_input[i] == '$' && user_input[i+1] == '$')    // Search for '$$' from user command
-			{
+            if(user_input[i] == '$' && user_input[i+1] == '$')    // Search for '$$' from user command
+            {
                 // Loop word for each character to change '$' to pid
-				for(j = 0; j < strlen(pid); j++)
-				{
-					cmd_arr[the_word][the_char] = pid[j];    // Change character in word to pid
-					the_char++;      // Increment count of character in the word when adding pid
-				}
-				i++;    // Increment character in user input
-			}
-			else if(user_input[i] == ' ' || user_input[i] == '\0')
-			{
-				cmd_arr[the_word][the_char] = '\0';    // Indicate end of word
-				the_char = 0;      // Reset character counter to 0 for next word
-				the_word++;        // Increment to next word in array
-			}
+                for(j = 0; j < strlen(pid); j++)
+                {
+                    cmd_arr[the_word][the_char] = pid[j];    // Change character in word to pid
+                    the_char++;      // Increment count of character in the word when adding pid
+                }
+                i++;    // Increment character in user input
+            }
+            else if(user_input[i] == ' ' || user_input[i] == '\0')
+            {
+                cmd_arr[the_word][the_char] = '\0';    // Indicate end of word
+                the_char = 0;      // Reset character counter to 0 for next word
+                the_word++;        // Increment to next word in array
+            }
 
-			// Turn on background if '&' character is found
+            // Turn on background if '&' character is found
             // Search for '&' only if it is surrounded by spaces and at the end of string
-			else if(user_input[i] == '&' && the_char == 0 && user_input[i+1] == '\0')
-			{
-				i = strlen(user_input);     // End the loop
-				background = 1;             // Turn background on
-			}
-			else
-			{
-				cmd_arr[the_word][the_char] = user_input[i];      // Add character to word
-				the_char++;         // Increment to next character in word
-			}
+            else if(user_input[i] == '&' && the_char == 0 && user_input[i+1] == '\0')
+            {
+                i = strlen(user_input);     // End the loop
+                background = 1;             // Turn background on
+            }
+            else
+            {
+                cmd_arr[the_word][the_char] = user_input[i];      // Add character to word
+                the_char++;         // Increment to next character in word
+            }
 		}
 
         // If first string of array is '#' or string length of zero, then to do nothing
@@ -370,14 +372,14 @@ void userInput()
             ****************************************************************************************
             */
 
-			if(the_word == 1)     // Array contains 1 word
-			{
-				sprintf(directory, "%s", getenv("HOME"));   // Copy HOME environment path to string
+            if(the_word == 1)     // Array contains 1 word
+            {
+                sprintf(directory, "%s", getenv("HOME"));   // Copy HOME environment path to string
                 chdir(directory);       // Change directory to Home environment path
-			}
-			else if(the_word == 2)    // Array contains 2 words
-			{
-				strcpy(directory, cmd_arr[1]);      // Copy string of [cd] argument (path)
+            }
+            else if(the_word == 2)    // Array contains 2 words
+            {
+                strcpy(directory, cmd_arr[1]);      // Copy string of [cd] argument (path)
                 chdir(directory);       // Change directory to argument after [cd] command
 			}
 		}
@@ -409,14 +411,15 @@ void userInput()
                     Help Source: https://www.tutorialspoint.com/unix_system_calls/waitpid.htm
                 *****************************************************************************************
                 */
-				if(background && globalBG)
-				{
+
+                if(background && globalBG)
+                {
                     // Return immediately if no child has exited, Parent process has WNOHANG
-					waitpid(child_fork, &child_status, WNOHANG);        // pid_t waitpid(pid_t pid, int *status, int options);
-					printf("Background pid is %d\n", child_fork);
-				    fflush(stdout);
-					pid_count++;        // Increment pid counter
-				}
+                    waitpid(child_fork, &child_status, WNOHANG);        // pid_t waitpid(pid_t pid, int *status, int options);
+                    printf("Background pid is %d\n", child_fork);
+                    fflush(stdout);
+                    pid_count++;        // Increment pid counter
+                }
 				else
 				{
                     /*
@@ -461,7 +464,7 @@ void userInput()
             // Check the status of all processes BEFORE returning access to command line to user
 			while((child_fork = waitpid(-1, &child_status, WNOHANG)) > 0)
 			{
-				if(pid_count == 0)
+                if(pid_count == 0)
                 {
                     continue;
                 }
