@@ -249,9 +249,9 @@ void signalHandler()
         - Any children running as background process must ignore SIGTSTP.
     *****************************************************************************************
     */
+
     signal1.sa_handler = SIG_DFL;       // Set SIGINT as default to ignore SIGTSTP
     sigaction(SIGINT, &signal1, NULL);
-    // fflush(stdout);     // fflush everything
 }
 
 
@@ -274,11 +274,10 @@ void userInput()
     int child_status;       // Status of child process
 
 
-
     while(1)
     {
         int the_word = 0;       // Keep track of words when parsing
-		int the_char = 0;       // Keep track of the character in word when parsing
+        int the_char = 0;       // Keep track of the character in word when parsing
 
         printf(": ");
         fflush(stdout);
