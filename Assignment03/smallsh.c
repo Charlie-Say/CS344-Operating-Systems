@@ -91,6 +91,8 @@ void wordArray()
     An input file redirected via stdin should be opened for reading only;
     if your shell cannot open the file for reading,
     it should print an error message and set the exit status to 1 (but don't exit the shell).
+
+    Help Source: https://www.quora.com/What-is-the-difference-between-open-and-fopen-in-C-How-are-they-different-with-each-other-in-terms-of-internal-working
 *****************************************************************************************
 */
 void inputFile(char theFile[MAX_CMD])
@@ -98,7 +100,7 @@ void inputFile(char theFile[MAX_CMD])
     int fd;             // File Descriptor: integer value of file in process
     int dup_error;
     fd = open(theFile, O_RDONLY);       // Use open() for returning a file descriptor. fopen() returns FILE*
-                                        // Help Source: https://www.quora.com/What-is-the-difference-between-open-and-fopen-in-C-How-are-they-different-with-each-other-in-terms-of-internal-working
+
     if(fd == -1)
     {
         printf("Cannot open %s for input", theFile);        // Handle error in opening file
@@ -122,6 +124,8 @@ void inputFile(char theFile[MAX_CMD])
     Similarly, an output file redirected via stdout should be opened for writing only;
     it should be truncated if it already exists or created if it does not exist.
     If your shell cannot open the output file it should print an error message and set the exit status to 1 (but don't exit the shell).
+
+    Help Source: https://www.quora.com/What-is-the-difference-between-open-and-fopen-in-C-How-are-they-different-with-each-other-in-terms-of-internal-working
 *****************************************************************************************
 */
 void outputFile(char theFile[MAX_CMD])
@@ -129,7 +133,7 @@ void outputFile(char theFile[MAX_CMD])
     int fd;             // File Descriptor: integer value of file in process
     int dup_error;
     fd = open(theFile, O_WRONLY | O_CREAT | O_TRUNC, 0644);         // Use open() for returning a file descriptor. fopen() returns FILE*
-                                                                    // Help Source: https://www.quora.com/What-is-the-difference-between-open-and-fopen-in-C-How-are-they-different-with-each-other-in-terms-of-internal-working
+
     if(fd == -1)
     {
         printf("Cannot open %s for output", theFile);        // Handle error in opening file
@@ -303,7 +307,8 @@ void userInput()
 			}
 
 			// Turn on background if '&' character is found
-			else if(user_input[i] == '&' && the_char == 0 && user_input[i+1] == '\0')       // Search for '&' only if it is surrounded by spaces and at the end of string
+            // Search for '&' only if it is surrounded by spaces and at the end of string
+			else if(user_input[i] == '&' && the_char == 0 && user_input[i+1] == '\0')
 			{
 				i = strlen(user_input);     // End the loop
 				background = 1;             // Turn background on
@@ -421,7 +426,8 @@ void userInput()
                         System call suspends execution of the current
                         process until one of its children terminates
 
-                        Help Source: https://stackoverflow.com/questions/47441871/why-should-we-check-wifexited-after-wait-in-order-to-kill-child-processes-in-lin
+                        Help Source: https://stackoverflow.com/questions/47441871/why-
+                        should-we-check-wifexited-after-wait-in-order-to-kill-child-processes-in-lin
 
                         Help Source: https://www.geeksforgeeks.org/exit-status-child-process-linux/
                     *****************************************************************************************
@@ -442,7 +448,8 @@ void userInput()
                             WIFSIGNALED macro indicates that the child process exited because it raised a signal,
                             the WTERMSIG macro returns the numeric value of the signal that was raised by the child process
 
-                            Help Source: https://www.ibm.com/docs/en/ztpf/2019?topic=zca-wtermsig-determine-which-signal-caused-child-process-exit
+                            Help Source: https://www.ibm.com/docs/en/ztpf/20
+                                        19?topic=zca-wtermsig-determine-which-signal-caused-child-process-exit
                         *****************************************************************************************
                         */
 
