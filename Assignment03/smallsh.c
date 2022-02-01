@@ -288,7 +288,7 @@ void userInput()
 
         // Create array of words
         for(i = 0; i <= (strlen(user_input)); i++)
-		{
+        {
             if(user_input[i] == '$' && user_input[i+1] == '$')    // Search for '$$' from user command
             {
                 // Loop word for each character to change '$' to pid
@@ -318,7 +318,7 @@ void userInput()
                 cmd_arr[the_word][the_char] = user_input[i];      // Add character to word
                 the_char++;         // Increment to next character in word
             }
-		}
+        }
 
         // If first string of array is '#' or string length of zero, then to do nothing
         if(user_input[0] == '#' || strlen(user_input) == 0)
@@ -346,7 +346,7 @@ void userInput()
             }
         }
         else if(strcmp(cmd_arr[0], "exit") == 0)     // Compare first string in array with 'exit'
-		{
+        {
             /*
             *****************************************************************************************
                 The [exit] command exits your shell.
@@ -356,7 +356,7 @@ void userInput()
             */
 
             break;
-		}
+        }
         else if(strcmp(cmd_arr[0], "cd") == 0)
         {
             /*
@@ -484,7 +484,7 @@ void userInput()
             }
         }
 	background = 0;         // Turn background off
-	}
+    }
 }
 
 
