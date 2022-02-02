@@ -1,5 +1,6 @@
 
-/*****************************************************************************************
+/*
+****************************************************************************************
 
 Assignment 3: smallsh (Portfolio Assignment)
 By: Charlie Say
@@ -17,7 +18,8 @@ Requirements:
     - Support running commands in foreground and background processes
     - Implement custom handlers for 2 signals, SIGINT and SIGTSTP
 
-*****************************************************************************************/
+****************************************************************************************
+*/
 
 
 #include <stdio.h>
@@ -35,7 +37,8 @@ int globalBG = 1;           // Global background variable
 
 
 // Parse user input into array from Command Prompt
-void wordArray()
+void
+wordArray()
 {
     char cmd_arr[MAX_ARGS][256];  // Array of words
     char user_input[MAX_CMD];     // User input
@@ -85,7 +88,8 @@ void wordArray()
 }
 
 
-void inputFile(char theFile[MAX_CMD])
+void
+inputFile(char theFile[MAX_CMD])
 {
     /*
     *****************************************************************************************
@@ -119,7 +123,8 @@ void inputFile(char theFile[MAX_CMD])
 }
 
 
-void outputFile(char theFile[MAX_CMD])
+void
+outputFile(char theFile[MAX_CMD])
 {
     /*
     *****************************************************************************************
@@ -152,8 +157,19 @@ void outputFile(char theFile[MAX_CMD])
     }
 }
 
-int* executeCMD(int the_word, char cmd_arr[MAX_ARGS][256])
+
+int*
+executeCMD(int the_word, char cmd_arr[MAX_ARGS][256])
 {
+    /*
+    ****************************************************************************************
+        Executing Other Commands
+
+        Your shell will execute any commands other than the 3 built-in
+        command by using fork(), exec() and waitpid()
+    ****************************************************************************************
+    */
+
     char* cmd_arg[512];         // Argument points to character string
     int i;                      // Loop variable for words in array
     int str_count = 0;          // Keep track of character in building argument string
@@ -199,7 +215,60 @@ int* executeCMD(int the_word, char cmd_arr[MAX_ARGS][256])
 }
 
 
-void signalStop()
+void
+statusCMD(int child_signal, int prev_exit)
+{
+    /*
+    *****************************************************************************************
+        The [status] command prints out either the exit status or the
+        terminating signal of the last foreground process ran by your shell.
+    *****************************************************************************************
+    */
+    if(child_signal == 0)         // If command is run before any foreground command, return exit status 0
+    {
+        child_signal = 0;
+        printf("exit value %d\n", child_signal);
+        fflush(stdout);
+    }
+    else
+    {
+        printf("exit value %d\n", prev_exit);
+        fflush(stdout);
+    }
+}
+
+
+void
+changeDir(int the_word, char directory[256], char cmd_arr[MAX_ARGS][256])
+{
+    /*
+    ****************************************************************************************
+        The [cd] command changes the working directory of smallsh.
+
+        - By itself - with no arguments - it changes to the directory specified in the HOME environment variable
+            - This is typically not the location where smallsh was executed from,
+                unless your shell executable is located in the HOME directory,
+                in which case these are the same.
+        - This command can also take one argument: the path of a directory to change to.
+            Your [cd] command should support both absolute and relative paths.
+    ****************************************************************************************
+    */
+
+    if(the_word == 1)     // Array contains 1 word
+    {
+        sprintf(directory, "%s", getenv("HOME"));   // Copy HOME environment path to string
+        chdir(directory);       // Change directory to Home environment path
+    }
+    else if(the_word == 2)    // Array contains 2 words
+    {
+        strcpy(directory, cmd_arr[1]);      // Copy string of [cd] argument (path)
+        chdir(directory);       // Change directory to argument after [cd] command
+    }
+}
+
+
+void
+signalStop()
 {
     /*
     *****************************************************************************************
@@ -228,7 +297,8 @@ void signalStop()
 }
 
 
-void signalHandler()
+void
+signalHandler()
 {
     /*
     *****************************************************************************************
@@ -240,39 +310,38 @@ void signalHandler()
     */
 
     // SIGNINT signal to parents and all childern at the same time
-    struct sigaction signal1;
-    signal1.sa_handler = SIG_IGN;
-    sigfillset(&signal1.sa_mask);
-    sigaction(SIGINT, &signal1, NULL);
+    struct sigaction signalC;
+    signalC.sa_handler = SIG_IGN;
+    sigfillset(&signalC.sa_mask);
+    sigaction(SIGINT, &signalC, NULL);
 
     // SIGTSTP signal to parent shell process and all children
-    struct sigaction signal2 = {{0}};
-    signal2.sa_handler = signalStop;
-    sigfillset(&signal2.sa_mask);
-    sigaction(SIGTSTP, &signal2, NULL);
+    struct sigaction signalZ = {{0}};
+    signalZ.sa_handler = signalStop;
+    sigfillset(&signalZ.sa_mask);
+    sigaction(SIGTSTP, &signalZ, NULL);
 
-    signal1.sa_handler = SIG_DFL;       // Set SIGINT as default to ignore SIGTSTP
-    sigaction(SIGINT, &signal1, NULL);
+    signalC.sa_handler = SIG_DFL;       // Set SIGINT as default to ignore SIGTSTP
+    sigaction(SIGINT, &signalC, NULL);
 }
 
 
-void userInput()
+void
+userInput()
 {
     char cmd_arr[MAX_ARGS][256];        // Array of words
     char user_input[MAX_CMD];           // User input
     int background = 0;         // Keep track of background for processes
-    char directory[256];        // Name of directory
     int prev_exit = 0;          // Keep track of previous exit pid
+    char directory[256];        // Name of directory
     int i;           // Loop iterator for word in array
     int j;           // Loop iterator for characters in word
     char pid[10];
-    sprintf(pid, "%d", getpid());   // Convert pid to string for $$ expansion
-
     pid_t child_fork;       // Data type for process identification used to represent process ids
     int child_signal = 1;
-
     int pid_count = 0;      // Keep track of pids for checking status of processes
     int child_status;       // Status of child process
+    sprintf(pid, "%d", getpid());   // Convert pid to string for $$ expansion
 
 
     while(1)
@@ -289,7 +358,13 @@ void userInput()
         // Create array of words
         for(i = 0; i <= (strlen(user_input)); i++)
         {
-            if(user_input[i] == '$' && user_input[i+1] == '$')    // Search for '$$' from user command
+            if(user_input[i] == ' ' || user_input[i] == '\0')
+            {
+                cmd_arr[the_word][the_char] = '\0';    // Indicate end of word
+                the_char = 0;      // Reset character counter to 0 for next word
+                the_word++;        // Increment to next word in array
+            }
+            else if(user_input[i] == '$' && user_input[i+1] == '$')    // Search for '$$' from user command
             {
                 // Loop word for each character to change '$' to pid
                 for(j = 0; j < strlen(pid); j++)
@@ -298,12 +373,6 @@ void userInput()
                     the_char++;      // Increment count of character in the word when adding pid
                 }
                 i++;    // Increment character in user input
-            }
-            else if(user_input[i] == ' ' || user_input[i] == '\0')
-            {
-                cmd_arr[the_word][the_char] = '\0';    // Indicate end of word
-                the_char = 0;      // Reset character counter to 0 for next word
-                the_word++;        // Increment to next word in array
             }
 
             // Turn on background if '&' character is found
@@ -327,23 +396,7 @@ void userInput()
         }
         else if(strcmp(cmd_arr[0], "status") == 0)
         {
-            /*
-            *****************************************************************************************
-                The [status] command prints out either the exit status or the
-                terminating signal of the last foreground process ran by your shell.
-            *****************************************************************************************
-            */
-            if(child_signal == 0)         // If command is run before any foreground command, return exit status 0
-            {
-                child_signal = 0;
-                printf("exit value %d\n", child_signal);
-                fflush(stdout);
-            }
-            else
-            {
-                printf("exit value %d\n", prev_exit);
-                fflush(stdout);
-            }
+            statusCMD(child_signal, prev_exit);
         }
         else if(strcmp(cmd_arr[0], "exit") == 0)     // Compare first string in array with 'exit'
         {
@@ -359,41 +412,10 @@ void userInput()
         }
         else if(strcmp(cmd_arr[0], "cd") == 0)
         {
-            /*
-            ****************************************************************************************
-                The [cd] command changes the working directory of smallsh.
-
-                - By itself - with no arguments - it changes to the directory specified in the HOME environment variable
-                    - This is typically not the location where smallsh was executed from,
-                        unless your shell executable is located in the HOME directory,
-                        in which case these are the same.
-                - This command can also take one argument: the path of a directory to change to.
-                    Your [cd] command should support both absolute and relative paths.
-            ****************************************************************************************
-            */
-
-            if(the_word == 1)     // Array contains 1 word
-            {
-                sprintf(directory, "%s", getenv("HOME"));   // Copy HOME environment path to string
-                chdir(directory);       // Change directory to Home environment path
-            }
-            else if(the_word == 2)    // Array contains 2 words
-            {
-                strcpy(directory, cmd_arr[1]);      // Copy string of [cd] argument (path)
-                chdir(directory);       // Change directory to argument after [cd] command
-            }
+            changeDir(the_word, directory, cmd_arr);
         }
         else
         {
-            /*
-            ****************************************************************************************
-                Executing Other Commands
-
-                Your shell will execute any commands other than the 3 built-in
-                command by using fork(), exec() and waitpid()
-            ****************************************************************************************
-            */
-
             signalHandler();        // Initialize with signal handlers
 
             child_fork = fork();    // Create child process with fork()
@@ -457,38 +479,38 @@ void userInput()
                         printf("terminated by signal %d\n", child_signal);
                         fflush(stdout);
                     }
+                    // Check the status of all processes BEFORE returning access to command line to user
+                    while((child_fork = waitpid(-1, &child_status, WNOHANG)) > 0)
+                    {
+                        if(pid_count == 0)
+                        {
+                            continue;
+                        }
+                        else if(WIFEXITED(child_status))        // Checks to see if child process has terminated (and calling waitpid() failed)
+                        {
+                            child_signal = 0;
+                            prev_exit = WEXITSTATUS(child_status);      // WEXITSTATUS is macro evaluates the status argument that child process passed exit()
+                            printf("Background pid %d is done: exit value %d\n", child_fork, prev_exit);
+                            fflush(stdout);
+                        }
+                        else
+                        {
+                            child_signal = WTERMSIG(child_status);
+                            printf("Background pid %d is done: terminated by signal %d\n", child_fork, child_signal);
+                            fflush(stdout);
+                        }
+                        pid_count--;        // Exit loop when pid_count == 0
+                    }
                 }
-            }
-
-            // Check the status of all processes BEFORE returning access to command line to user
-            while((child_fork = waitpid(-1, &child_status, WNOHANG)) > 0)
-            {
-                if(pid_count == 0)
-                {
-                    continue;
-                }
-                else if(WIFEXITED(child_status))        // Checks to see if child process has terminated (and calling waitpid() failed)
-                {
-                    child_signal = 0;
-                    prev_exit = WEXITSTATUS(child_status);      // WEXITSTATUS is macro evaluates the status argument that child process passed exit()
-                    printf("Background pid %d is done: exit value %d\n", child_fork, prev_exit);
-                    fflush(stdout);
-                }
-                else
-                {
-                    child_signal = WTERMSIG(child_status);
-                    printf("Background pid %d is done: terminated by signal %d\n", child_fork, child_signal);
-                    fflush(stdout);
-                }
-                pid_count--;        // Exit loop when pid_count == 0
             }
         }
-	background = 0;         // Turn background off
+        background = 0;         // Turn background off
     }
 }
 
 
-int main()
+int
+main()
 {
     userInput();
     return 0;
